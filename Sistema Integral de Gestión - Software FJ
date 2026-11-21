@@ -218,4 +218,108 @@ class GestorSistema:
             self.reservas.append(r)
             self._log("INFO", f"Reserva: {cliente.nombre} + {servicio.nombre}")
             return r
+# === PROGRAMA PRINCIPAL - 10 OPERACIONES ===
+def main():
+    print("=" * 60)
+    print("   SISTEMA INTEGRAL DE GESTIÓN - SOFTWARE FJ")
+    print("=" * 60)
+    gestor = GestorSistema()
+    print("✅ Sistema inicializado\n")
+
+    # 1. Cliente válido
+    print("--- 1. Registrar cliente VÁLIDO ---")
+    try:
+        c1 = gestor.registrar_cliente("María López", "maria@ejemplo.com", "3124567890")
+        print(f"✔️ {c1.mostrar_informacion()}")
+    except Exception as e:
+        print(f"❌ {e}")
+
+    # 2. Cliente inválido (correo malo)
+    print("\n--- 2. Registrar cliente INVÁLIDO (correo malo) ---")
+    try:
+        gestor.registrar_cliente("Carlos Ruiz", "correo-sin-arroba", "3201234567")
+    except DatoInvalidoError as e:
+        print(f"❌ Error capturado: {e}")
+
+    # 3. Segundo cliente válido
+    print("\n--- 3. Registrar segundo cliente ---")
+    try:
+        c2 = gestor.registrar_cliente("Juan Pérez", "juan@ejemplo.com", "3159876543")
+        print(f"✔️ {c2.mostrar_informacion()}")
+    except Exception as e:
+        print(f"❌ {e}")
+
+    # 4. Registrar servicios
+    print("\n--- 4. Registrar servicios ---")
+    try:
+        sala = gestor.registrar_servicio(ReservaSala("Sala Principal", "Reuniones", 15, 50000))
+        equipo = gestor.registrar_servicio(AlquilerEquipo("Proyector 4K", "Video", "Audiovisual", 75000))
+        asesoria = gestor.registrar_servicio(AsesoriaEspecializada("Python", "Capacitación", "Ing. Fernando", 120000))
+        print("✔️ Servicios registrados:")
+        print(f"   → {sala.mostrar_informacion()}")
+        print(f"   → {equipo.mostrar_informacion()}")
+        print(f"   → {asesoria.mostrar_informacion()}")
+    except Exception as e:
+        print(f"❌ {e}")
+
+    # 5. Reserva exitosa
+    print("\n--- 5. Crear y confirmar reserva ---")
+    try:
+        r1 = gestor.crear_reserva(c1, sala, 3)
+        print(r1.confirmar(impuesto=0.19, descuento=0.10))
+        print(r1.mostrar_detalle())
+    except Exception as e:
+        print(f"❌ {e}")
+
+    # 6. Reserva inválida (duración negativa)
+    print("\n--- 6. Reserva INVÁLIDA (duración negativa) ---")
+    try:
+        gestor.crear_reserva(c2, equipo, -2)
+    except ReservaInvalidaError as e:
+        print(f"❌ Error capturado: {e}")
+
+    # 7. Servicio no disponible
+    print("\n--- 7. Servicio NO disponible ---")
+    try:
+        sala.disponible = False
+        r2 = gestor.crear_reserva(c2, sala, 2)
+        r2.confirmar()
+    except ServicioNoDisponibleError as e:
+        print(f"❌ Error capturado: {e}")
+        sala.disponible = True
+
+    # 8. Cálculo con diferentes parámetros
+    print("\n--- 8. Cálculo de costos ---")
+    try:
+        print(f"3 días sin impuesto: ${equipo.calcular_costo(3)}")
+        print(f"Con 19% impuesto: ${equipo.calcular_costo(3, 0.19)}")
+        print(f"Con impuesto y 15% descuento: ${equipo.calcular_costo(3, 0.19, 0.15)}")
+    except Exception as e:
+        print(f"❌ {e}")
+
+    # 9. Cancelar reserva
+    print("\n--- 9. Crear y cancelar reserva ---")
+    try:
+        r3 = gestor.crear_reserva(c2, asesoria, 2)
+        print("Reserva creada, cancelando...")
+        print(r3.cancelar())
+        print(f"Estado final: {r3.estado}")
+    except Exception as e:
+        print(f"❌ {e}")
+
+    # 10. Cliente con nombre corto
+    print("\n--- 10. Cliente INVÁLIDO (nombre corto) ---")
+    try:
+        gestor.registrar_cliente("A", "ana@ejemplo.com", "3001112222")
+    except DatoInvalidoError as e:
+        print(f"❌ Error capturado: {e}")
+
+    print("\n" + "=" * 60)
+    print("✅ FIN DE LAS OPERACIONES")
+    print(f"📋 Clientes: {len(gestor.clientes)} | Servicios: {len(gestor.servicios)} | Reservas: {len(gestor.reservas)}")
+    print("📄 Revisa el archivo 'logs.txt' para ver el registro completo")
+    print("=" * 60)
+
+if __name__ == "__main__":
+    main()
 
