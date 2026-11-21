@@ -83,4 +83,54 @@ class Servicio(EntidadBase):
     def calcular_costo(self, duracion, impuesto=0.0, descuento=0.0): pass
     @abstractmethod
     def mostrar_informacion(self): pass
+# === SERVICIOS DERIVADOS ===
+class ReservaSala(Servicio):
+    def __init__(self, nombre, descripcion, capacidad, precio_hora, disponible=True):
+        self.__capacidad = capacidad
+        self.__precio_hora = precio_hora
+        super().__init__(nombre, descripcion, disponible)
+    
+    def calcular_costo(self, duracion, impuesto=0.0, descuento=0.0):
+        self.verificar_disponibilidad()
+        if duracion <= 0: raise DatoInvalidoError("Duración debe ser mayor a 0")
+        base = duracion * self.__precio_hora
+        return round(base + base*impuesto - base*descuento, 2)
+    
+    def mostrar_informacion(self):
+        estado = "✅ Disponible" if self._disponible else "❌ No disponible"
+        return f"Sala: {self._nombre} | Capacidad: {self.__capacidad} | ${self.__precio_hora}/h | {estado}"
+
+
+class AlquilerEquipo(Servicio):
+    def __init__(self, nombre, descripcion, tipo_equipo, precio_dia, disponible=True):
+        self.__tipo = tipo_equipo
+        self.__precio_dia = precio_dia
+        super().__init__(nombre, descripcion, disponible)
+    
+    def calcular_costo(self, duracion, impuesto=0.0, descuento=0.0):
+        self.verificar_disponibilidad()
+        if duracion <= 0: raise DatoInvalidoError("Días deben ser mayores a 0")
+        base = duracion * self.__precio_dia
+        return round(base + base*impuesto - base*descuento, 2)
+    
+    def mostrar_informacion(self):
+        estado = "✅ Disponible" if self._disponible else "❌ No disponible"
+        return f"Equipo: {self._nombre} | Tipo: {self.__tipo} | ${self.__precio_dia}/día | {estado}"
+
+
+class AsesoriaEspecializada(Servicio):
+    def __init__(self, nombre, descripcion, especialista, valor_sesion, disponible=True):
+        self.__especialista = especialista
+        self.__valor = valor_sesion
+        super().__init__(nombre, descripcion, disponible)
+    
+    def calcular_costo(self, duracion, impuesto=0.0, descuento=0.0):
+        self.verificar_disponibilidad()
+        if duracion <= 0: raise DatoInvalidoError("Sesiones deben ser mayores a 0")
+        base = duracion * self.__valor
+        return round(base + base*impuesto - base*descuento, 2)
+    
+    def mostrar_informacion(self):
+        estado = "✅ Disponible" if self._disponible else "❌ No disponible"
+        return f"Asesoría: {self._nombre} | Especialista: {self.__especialista} | ${self.__valor}/sesión | {estado}"
 
