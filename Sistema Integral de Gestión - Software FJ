@@ -1,1 +1,86 @@
 
+# SISTEMA INTEGRAL DE GESTIÓN - SOFTWARE FJ
+# ==========================================================
+
+from abc import ABC, abstractmethod
+from datetime import datetime
+import re
+
+# === EXCEPCIONES PERSONALIZADAS ===
+class ErrorSistema(Exception): pass
+class DatoInvalidoError(ErrorSistema): pass
+class ServicioNoDisponibleError(ErrorSistema): pass
+class ReservaInvalidaError(ErrorSistema): pass
+class OperacionNoPermitidaError(ErrorSistema): pass
+class ParametroFaltanteError(ErrorSistema): pass
+
+# === CLASE ABSTRACTA BASE ===
+class EntidadBase(ABC):
+    contador_id = 0
+    def __init__(self):
+        EntidadBase.contador_id += 1
+        self._id = EntidadBase.contador_id
+    @property
+    def id(self): return self._id
+    @abstractmethod
+    def mostrar_informacion(self): pass
+    @abstractmethod
+    def validar_datos(self): pass
+
+# === CLASE CLIENTE ===
+class Cliente(EntidadBase):
+    def __init__(self, nombre, correo, telefono):
+        self.__nombre = nombre
+        self.__correo = correo
+        self.__telefono = telefono
+        self.validar_datos()
+        super().__init__()
+    
+    @property
+    def nombre(self): return self.__nombre
+    @property
+    def correo(self): return self.__correo
+    @property
+    def telefono(self): return self.__telefono
+    
+    def validar_datos(self):
+        if len(self.__nombre.strip()) < 2:
+            raise DatoInvalidoError("El nombre debe tener al menos 2 caracteres")
+        if not self.__correo:
+            raise ParametroFaltanteError("El correo es obligatorio")
+        if "@" not in self.__correo or "." not in self.__correo:
+            raise DatoInvalidoError("Formato de correo inválido")
+        if len(self.__telefono) < 7:
+            raise DatoInvalidoError("El teléfono debe tener al menos 7 dígitos")
+    
+    def mostrar_informacion(self):
+        return f"Cliente #{self._id}: {self.__nombre} | Correo: {self.__correo} | Teléfono: {self.__telefono}"
+
+# === CLASE ABSTRACTA SERVICIO ===
+class Servicio(EntidadBase):
+    def __init__(self, nombre, descripcion, disponible=True):
+        self._nombre = nombre
+        self._descripcion = descripcion
+        self._disponible = disponible
+        self.validar_datos()
+        super().__init__()
+    
+    @property
+    def nombre(self): return self._nombre
+    @property
+    def disponible(self): return self._disponible
+    @disponible.setter
+    def disponible(self, valor): self._disponible = valor
+    
+    def validar_datos(self):
+        if not self._nombre: raise DatoInvalidoError("Nombre del servicio vacío")
+    
+    def verificar_disponibilidad(self):
+        if not self._disponible:
+            raise ServicioNoDisponibleError(f"Servicio '{self._nombre}' no disponible")
+    
+    @abstractmethod
+    def calcular_costo(self, duracion, impuesto=0.0, descuento=0.0): pass
+    @abstractmethod
+    def mostrar_informacion(self): pass
+
